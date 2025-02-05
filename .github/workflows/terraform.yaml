@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'terraform/environment/dev/**/*.tf'
+      - 'terraform/environment/**/*.tf'
 
 jobs:
  terraform:
@@ -13,8 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
      run:
-       shell: bash
-       working-directory: ./terraform/environment
+      working-directory: ./terraform/environment
 
     steps:
       - name: Checkout code
