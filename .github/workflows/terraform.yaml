@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'environments/dev/**/*.tf'
+      - 'terraform/environment/dev/**/*.tf'
 
 jobs:
  terraform:
