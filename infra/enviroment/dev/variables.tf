@@ -1,7 +1,7 @@
 variable "instance_name" {
-    type        =  string
-    default     = "instance-name"
-    description = "Name for the ec2 instance"
+  type        =  string
+  default     = "instance-name"
+  description = "Name for the ec2 instance"
 }
 
 variable "instance_type" {
