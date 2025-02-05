@@ -33,7 +33,7 @@ resource "aws_eip" "instance_eip" {
 }
 
 resource "aws_instance" "this" {
-  ami           = data.aws_ami.amazon_linux_2.id
+  ami           = var.ami_id
   instance_type = var.instance_type
   subnet_id     = var.subnet_id
 
