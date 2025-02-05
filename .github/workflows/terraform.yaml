@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - main
-    # paths:
-    #   - 'terraform/environment/**/*.tf'
+    paths:
+      - 'terraform/environment/**/*.tf'
 
 jobs:
  terraform:
@@ -19,11 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Debug Directory
-        run: |
-          pwd
-          ls -R
-          
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
