@@ -5,7 +5,7 @@ output "account_id" {
 }
 
 module "my_ec2" {
-  source = "../../modules/ec2-instance"
+  source = "../modules/ec2-instance"
 
   instance_name   = var.instance_name
   instance_type   = var.instance_type
