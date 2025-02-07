@@ -1,0 +1,77 @@
+name: App Deployment Workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'application/**'
+
+jobs:
+  application:
+    name: App deploy
+    runs-on: ubuntu-latest
+    defaults:
+     run:
+      working-directory: ./application
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push Docker image
+        run: |
+          docker build -t ${{ secrets.ECR_REPOSITORY }}:latest .
+          docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+
+      - name: Retrieve EC2 Instance IP
+        run: |
+          IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${{ vars.INSTANCE_NAME }}" --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+          echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
+
+      - name: Deploy application
+        run: |
+          echo "${{ secrets.SSH_SECRET_KEY }}" > ssh_key.pem
+          chmod 600 ssh_key.pem
+          ssh-keyscan -H ${{ env.INSTANCE_IP }} >> ~/.ssh/known_hosts
+
+          ssh -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} << EOF
+
+            sudo apt update
+            sudo apt-get install nginx
+            sudo systemctl start nginx
+            sudo systemctl status nginx
+            
+            echo 'server {
+              listen 80;
+              location / {
+                proxy_pass http://127.0.0.1:8000;
+                proxy_set_header Host \$host;
+                proxy_set_header X-Real-IP \$remote_addr;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+            }' | sudo tee /etc/nginx/sites-available/default
+
+            sudo nginx -t
+            sudo systemctl restart nginx
+
+
+            sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
+            sudo docker run -d -p 8000:8000 ${{ secrets.ECR_REPOSITORY }}:latest
+          EOF

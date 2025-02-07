@@ -1,13 +1,11 @@
-variable "instance_name" {
-  type        =  string
-  default     = "instance-name"
-  description = "Name for the ec2 instance"
+variable "vpc_id" {
+  type = string
+  description = "VPC for the ec2 instance"
 }
 
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t3.micro"
+variable "subnet_id" {
+  type = string
+  description = "VPC public subnet for the ec2 instance"
 }
 
 variable "ami_id" {
@@ -15,12 +13,17 @@ variable "ami_id" {
   type        = string
 }
 
-variable "subnet_id" {
-  description = "The subnet to launch the EC2 instance in"
-  type        = string
+variable "instance_name" {
+  type        =  string
+  description = "Name for the ec2 instance"
 }
 
-variable "vpc_id" {
-  description = "The VPC ID"
+variable "instance_type" {
   type        = string
+  description = "Type of ec2 instance"
+}
+
+variable "key_name" {
+  type        = string
+  description = "SSH key name for the ec2 instance"
 }

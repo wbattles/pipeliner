@@ -15,13 +15,15 @@ variable "ami_id" {
 
 variable "instance_name" {
     type        =  string
-    default     = "instance-name"
     description = "Name for the ec2 instance"
 }
 
 variable "instance_type" {
     type        = string
-    default     = "t2.micro"
-    description = "Tyyes i am aalready using pe of ec2 instance"
+    description = "Type of ec2 instance"
 }
 
+variable "key_name" {
+    type        = string
+    description = "SSH key name for the ec2 instance"
+}

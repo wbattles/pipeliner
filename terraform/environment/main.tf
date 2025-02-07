@@ -1,9 +1,3 @@
-data "aws_caller_identity" "current" {}
-
-output "account_id" {
-  value = data.aws_caller_identity.current.account_id
-}
-
 module "my_ec2" {
   source = "../modules/ec2-instance"
 
@@ -13,4 +7,5 @@ module "my_ec2" {
   # ami_id          = data.aws_ami.amazon_linux_2.id
   vpc_id          = var.vpc_id
   subnet_id       = var.subnet_id
+  key_name        = var.key_name
 }

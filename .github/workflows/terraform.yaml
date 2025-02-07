@@ -8,7 +8,7 @@ on:
       - 'terraform/**/*.tf'
 
 jobs:
- terraform:
+  terraform:
     name: Terraform deploy
     runs-on: ubuntu-latest
     defaults:
@@ -38,6 +38,7 @@ jobs:
           echo "TF_VAR_vpc_id=${{ vars.VPC_ID }}" >> $GITHUB_ENV
           echo "TF_VAR_subnet_id=${{ vars.SUBNET_ID }}" >> $GITHUB_ENV
           echo "TF_VAR_ami_id=${{ secrets.AMI_ID }}" >> $GITHUB_ENV
+          echo "TF_VAR_key_name=${{ secrets.KEY_NAME }}" >> $GITHUB_ENV
 
       - name: Terraform init
         run: |
@@ -50,4 +51,3 @@ jobs:
       - name: Terraform apply
         run: |
           terraform apply -auto-approve
-
