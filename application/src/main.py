@@ -8,4 +8,3 @@ def create_app():
         return "Hello darlin"
     
     return app
-    
