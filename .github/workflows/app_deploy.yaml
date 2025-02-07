@@ -86,6 +86,7 @@ jobs:
             export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
 
             sudo apt-get install amazon-ecr-credential-helper -y
+            sudo rm -f /home/ubuntu/.docker/config.json
             mkdir -p ~/.docker
             echo '{
               "credHelpers": {
@@ -95,7 +96,7 @@ jobs:
             }' > ~/.docker/config.json
 
             aws sts get-caller-identity
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
