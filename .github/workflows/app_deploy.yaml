@@ -93,7 +93,10 @@ jobs:
                 "*.dkr.ecr.*.amazonaws.com": "ecr-login"
               }
             }' > ~/.docker/config.json
-            
+
+            aws sts get-caller-identity
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
           EOF
