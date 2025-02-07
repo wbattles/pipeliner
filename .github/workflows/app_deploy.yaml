@@ -54,7 +54,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} << EOF
 
             sudo apt update
-            sudo apt-get install nginx
+            sudo apt-get install -y nginx
             sudo systemctl start nginx
             sudo systemctl status nginx
             
