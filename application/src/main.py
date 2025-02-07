@@ -5,6 +5,6 @@ def create_app():
     
     @app.route('/')
     def home():
-        return "Hello darlin!"
+        return "Hello darlin"
     
     return app
