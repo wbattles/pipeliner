@@ -54,8 +54,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} << EOF
 
             sudo apt update
-            sudo apt-get install -y nginx
-            sudo systemctl start nginx
+            sudo apt-get install nginx -y
             sudo systemctl status nginx
             
             echo 'server {
@@ -86,7 +85,15 @@ jobs:
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
             export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
 
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+            sudo apt-get install amazon-ecr-credential-helper -y
+            mkdir -p ~/.docker
+            echo '{
+              "credHelpers": {
+                "public.ecr.aws": "ecr-login",
+                "*.dkr.ecr.*.amazonaws.com": "ecr-login"
+              }
+            }' > ~/.docker/config.json
+            
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
           EOF
