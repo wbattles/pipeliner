@@ -9,4 +9,3 @@ module "my_ec2" {
   subnet_id       = var.subnet_id
   key_name        = var.key_name
 }
-
