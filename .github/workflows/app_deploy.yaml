@@ -72,7 +72,9 @@ jobs:
             sudo nginx -t
             sudo systemctl restart nginx
 
-
+            sudo apt-get install docker.io -y
+            sudo systemctl start docker
+            
             sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
             sudo docker run -d -p 8000:8000 ${{ secrets.ECR_REPOSITORY }}:latest
           EOF
