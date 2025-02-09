@@ -1,11 +1,11 @@
 name: App Deployment Workflow
 
-# on:
-#   push:
-#     branches:
-#       - main
-#     paths:
-#       - 'application/**'
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'application_test/**'
 
 jobs:
   application:
