@@ -55,7 +55,7 @@ jobs:
             git pull origin main
 
             sudo apt install python3-pip -y
-            sudo apt-get install python3-venv
+            sudo apt-get install python3-venv -y
             python3 -m venv venv
             pip install -r requirements.txt
             source venv/bin/activate
