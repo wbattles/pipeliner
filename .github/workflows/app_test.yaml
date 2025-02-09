@@ -9,7 +9,7 @@ on:
 
 jobs:
   application:
-    name: App deploy
+    name: App test
     runs-on: ubuntu-latest
     defaults:
      run:
@@ -30,14 +30,14 @@ jobs:
         run: |
           IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${{ vars.INSTANCE_NAME }}" --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
           echo "::add-mask::$IP"
-          echo "ip=$IP" >> $GITHUB_OUTPUT
+          echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
 
       - name: Deploy test application
         run: |
           echo "${{ secrets.SSH_SECRET_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
 
-          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@$IP << EOF
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} << EOF
             sudo apt update
 
             sudo apt install git -y
