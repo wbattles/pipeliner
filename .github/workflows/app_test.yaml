@@ -1,0 +1,68 @@
+name: App Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'application/**'
+
+jobs:
+  application:
+    name: App deploy
+    runs-on: ubuntu-latest
+    defaults:
+     run:
+      working-directory: ./application_test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Retrieve EC2 Instance IP
+        run: |
+          IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${{ vars.INSTANCE_NAME }}" --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+          echo "::add-mask::$IP"
+          echo "ip=$IP" >> $GITHUB_OUTPUT
+
+      - name: Deploy test application
+        run: |
+          echo "${{ secrets.SSH_SECRET_KEY }}" > ssh_key.pem
+          chmod 600 ssh_key.pem
+
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@$IP << EOF
+            sudo apt update
+
+            sudo apt install git -y
+            git --version
+            
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+            git init
+            git config core.sparseCheckout true
+
+            git remote add origin ${{ vars.GIT_REPO }}
+            echo "application_test/*" >> .git/info/sparse-checkout
+
+            git pull origin main
+
+            sudo apt install python3-pip -y
+            sudo apt-get install python3-venv
+            python3 -m venv venv
+            pip install -r requirements.txt
+            source venv/bin/activate
+            
+            cd src
+
+            python3 main.py
+
+
+          EOF      
