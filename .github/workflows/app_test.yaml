@@ -1,11 +1,11 @@
 name: App Deployment Workflow
 
-# on:
-#   push:
-#     branches:
-#       - main
-#     paths:
-#       - 'application/**'
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'application/**'
 
 jobs:
   application:
@@ -52,7 +52,7 @@ jobs:
           chmod 600 ssh_key.pem
 
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} << EOF
-
+          
             sudo apt update
             sudo apt-get install nginx -y
             sudo systemctl status nginx
@@ -77,7 +77,7 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             sudo apt-get install -y unzip
             unzip -o -q awscliv2.zip
-            sudo ./aws/install -update
+            sudo ./aws/install --update
 
             export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
             export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
@@ -85,15 +85,7 @@ jobs:
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
             export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
 
-            sudo apt-get install amazon-ecr-credential-helper -y
-            sudo rm -f /home/ubuntu/.docker/config.json
-            mkdir -p ~/.docker
-            echo '{
-              "credHelpers": {
-                "public.ecr.aws": "ecr-login",
-                "*.dkr.ecr.*.amazonaws.com": "ecr-login"
-              }
-            }' > ~/.docker/config.json
+            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
