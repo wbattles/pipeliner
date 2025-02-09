@@ -97,8 +97,9 @@ jobs:
 
             sudo docker stop run_app || true
             sudo docker rm run_app || true
-            sudo docker image prune -f
 
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 --name run_app \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
+
+            sudo docker image prune -f
           EOF
