@@ -85,6 +85,9 @@ jobs:
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
             export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
 
+            echo "AWS Account ID: ${AWS_ACCOUNT_ID:0:3}...${AWS_ACCOUNT_ID: -3}"
+            echo "ECR Repository: $ECR_REPOSITORY"
+
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
             sudo docker stop $(sudo docker ps -aq) || true
