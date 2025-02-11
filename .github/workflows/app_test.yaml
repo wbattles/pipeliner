@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'application_test/**'
+      - 'application/**'
 
 jobs:
   application:
@@ -84,16 +84,6 @@ jobs:
             export AWS_DEFAULT_REGION="us-east-1"
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
             export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
-
-            sudo apt-get install amazon-ecr-credential-helper -y
-            sudo rm -f /home/ubuntu/.docker/config.json
-            mkdir -p ~/.docker
-            echo '{
-              "credHelpers": {
-                "public.ecr.aws": "ecr-login",
-                "*.dkr.ecr.*.amazonaws.com": "ecr-login"
-              }
-            }' > ~/.docker/config.json
           
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 

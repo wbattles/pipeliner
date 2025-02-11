@@ -48,7 +48,7 @@ resource "aws_vpc_security_group_egress_rule" "web" {
 
 
 resource "aws_iam_role" "ec2_role" {
-  name = "ec2_secrets_manager_role"
+  name = "ec2-secrets-manager-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -65,7 +65,7 @@ resource "aws_iam_role" "ec2_role" {
 }
 
 resource "aws_iam_policy" "secrets_manager_policy" {
-  name        = "secrets_manager_policy"
+  name        = "secrets-manager-policy"
 
   policy = jsonencode({
     Version = "2012-10-17"
