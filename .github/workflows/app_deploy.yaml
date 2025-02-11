@@ -89,8 +89,7 @@ jobs:
 
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
-            sudo docker stop $(sudo docker ps -q --filter publish=8000) || true
-            sudo docker rm $(sudo docker ps -q --filter publish=8000) || true
+            sudo docker stop run_app || sudo docker rm -f run_app || true
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 --env AWS_EC2_METADATA_DISABLED=false --name run_app \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
           EOF
