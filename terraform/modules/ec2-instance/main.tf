@@ -46,6 +46,53 @@ resource "aws_vpc_security_group_egress_rule" "web" {
   to_port     = -1
 }
 
+
+resource "aws_iam_role" "ec2_role" {
+  name = "ec2_secrets_manager_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "secrets_manager_policy" {
+  name        = "secrets_manager_policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:ListSecrets"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_secrets_manager_policy" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.secrets_manager_policy.arn
+}
+  
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2_instance_profile"
+  role = aws_iam_role.ec2_role.name
+}
+
+
 resource "aws_eip" "instance_eip" {
   instance = aws_instance.this.id
 }
@@ -56,6 +103,7 @@ resource "aws_instance" "this" {
   subnet_id     = var.subnet_id
 
   vpc_security_group_ids = [aws_security_group.public_traffic.id]
+  iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
   key_name = var.key_name
 
   tags = {
