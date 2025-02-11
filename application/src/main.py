@@ -36,7 +36,7 @@ def create_app():
     
     @app.route('/')
     def home():
-        secret_name = "TEST_VALUE"
+        secret_name = "TestSecret"
         region_name = "us-east-1"
         secret_value = get_secret(secret_name, region_name)
 
