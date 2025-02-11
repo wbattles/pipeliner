@@ -43,4 +43,3 @@ def create_app():
         return secret_value
     
     return app
-    
