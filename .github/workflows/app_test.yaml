@@ -1,4 +1,4 @@
-name: App Deployment Workflow
+name: App Test Workflow
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   application:
-    name: App deploy
+    name: App test
     runs-on: ubuntu-latest
     defaults:
      run:
@@ -87,6 +87,9 @@ jobs:
 
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
+            sudo docker stop run_app || true
+            sudo docker rm run_app || true
+            
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
           EOF
