@@ -88,12 +88,26 @@ jobs:
 
             aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
-            sudo fuser -k 8000/tcp || true
+            # Debug: Check what's using port 8000
+            echo "Checking port 8000 usage..."
+            sudo lsof -i :8000 || true
             
+            # Debug: Check running Docker containers
+            echo "Checking Docker containers..."
+            sudo docker ps || true
+
+            # Kill processes on port 8000
+            echo "Killing processes on port 8000..."
+            sudo lsof -ti:8000 | xargs -r sudo kill -9 || true
+            
+            # Stop all Docker containers
+            echo "Stopping Docker containers..."
             sudo docker stop $(sudo docker ps -aq) || true
             sudo docker rm $(sudo docker ps -aq) || true
 
-            sudo docker system prune -f
+            # Verify port is free
+            echo "Verifying port 8000 is free..."
+            sudo lsof -i :8000 || true
 
             sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
             sudo docker run -d -p 8000:8000 --env AWS_EC2_METADATA_DISABLED=false --name run_app \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
