@@ -42,56 +42,22 @@ jobs:
           docker tag ${{ secrets.ECR_REPOSITORY }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
 
-      
       - name: Retrieve EC2 Instance IP
         run: |
           IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${{ vars.INSTANCE_NAME }}" --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
           echo "::add-mask::$IP"
           echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
 
-
+      - name: Copy deployment script
+        run: scp -o StrictHostKeyChecking=no -i ssh_key.pem scripts/deploy.sh ubuntu@${{ env.INSTANCE_IP }}:~/deploy.sh
 
       - name: Deploy application
         run: |
           echo "${{ secrets.SSH_SECRET_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
 
-          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} << EOF
-
-            sudo apt update
-            sudo apt-get install nginx -y
-            sudo systemctl status nginx
-            
-            echo 'server {
-              listen 80;
-              location / {
-                proxy_pass http://127.0.0.1:8000;
-                proxy_set_header Host \$host;
-                proxy_set_header X-Real-IP \$remote_addr;
-                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto \$scheme;
-              }
-            }' | sudo tee /etc/nginx/sites-available/default
-
-            sudo nginx -t
-            sudo systemctl restart nginx
-
-            sudo apt-get install docker.io -y
-            sudo systemctl start docker
-
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            sudo apt-get install -y unzip
-            unzip -o -q awscliv2.zip
-            sudo ./aws/install -update
-
-            export AWS_DEFAULT_REGION="us-east-1"
-            export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
-            export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
-
-            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
-
-            fuser -k -n tcp 8000
-            
-            sudo docker pull \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
-            sudo docker run -d -p 8000:8000 --env AWS_EC2_METADATA_DISABLED=false --name run_app \$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/\$ECR_REPOSITORY:latest
-          EOF
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} \
+            AWS_DEFAULT_REGION="us-east-1" \
+            AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}" \
+            ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}" \
+            bash ~/deploy.sh
