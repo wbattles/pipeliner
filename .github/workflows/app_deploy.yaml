@@ -60,7 +60,8 @@ jobs:
       - name: Deploy application
         run: |
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} \
-            AWS_DEFAULT_REGION="us-east-1" \
-            AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}" \
-            ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}" \
-            bash ~/deploy.sh
+            "chmod +x ~/deploy.sh && 
+            export AWS_DEFAULT_REGION=us-east-1 && 
+            export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} && 
+            export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }} && 
+            bash ~/deploy.sh"
