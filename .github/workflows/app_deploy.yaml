@@ -49,7 +49,7 @@ jobs:
           echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
 
       - name: Copy deployment script
-        run: scp -o StrictHostKeyChecking=no -i ssh_key.pem scripts/deploy.sh ubuntu@${{ env.INSTANCE_IP }}:~/deploy.sh
+        run: scp -o StrictHostKeyChecking=no -i ssh_key.pem ../scripts/deploy.sh ubuntu@${{ env.INSTANCE_IP }}:~/deploy.sh
 
       - name: Deploy application
         run: |
