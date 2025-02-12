@@ -64,8 +64,8 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-resource "aws_iam_policy" "secrets_manager_policy" {
-  name        = "secrets-manager-policy"
+resource "aws_iam_policy" "ec2_access_policy" {
+  name        = "ec2-access-policy"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -77,14 +77,28 @@ resource "aws_iam_policy" "secrets_manager_policy" {
         ]
         Effect   = "Allow"
         Resource = "*"
+      },
+      {
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetRepositoryPolicy",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages",
+          "ecr:DescribeImages",
+          "ecr:BatchGetImage"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "attach_secrets_manager_policy" {
+resource "aws_iam_role_policy_attachment" "attach_policy" {
   role       = aws_iam_role.ec2_role.name
-  policy_arn = aws_iam_policy.secrets_manager_policy.arn
+  policy_arn = aws_iam_policy.ec2_access_policy.arn
 }
   
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
