@@ -48,14 +48,17 @@ jobs:
           echo "::add-mask::$IP"
           echo "INSTANCE_IP=$IP" >> $GITHUB_ENV
 
-      - name: Copy deployment script
-        run: scp -o StrictHostKeyChecking=no -i ssh_key.pem ../scripts/deploy.sh ubuntu@${{ env.INSTANCE_IP }}:~/deploy.sh
-
-      - name: Deploy application
+      - name: Prepare SSH Key
         run: |
           echo "${{ secrets.SSH_SECRET_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
 
+      - name: Copy deployment script
+        run: |
+          scp -o StrictHostKeyChecking=no -i ssh_key.pem ../scripts/deploy.sh ubuntu@${{ env.INSTANCE_IP }}:~/deploy.sh
+
+      - name: Deploy application
+        run: |
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.INSTANCE_IP }} \
             AWS_DEFAULT_REGION="us-east-1" \
             AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}" \
