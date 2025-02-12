@@ -32,8 +32,14 @@ aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS
 sudo docker stop run_app || true
 sudo docker rm -f run_app || true
 
+while ss -tuln | grep :8000; do
+    sudo lsof -ti:8000 | xargs -r sudo kill -9
+    sleep 5
+done
+
 sudo docker pull $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:latest
-sudo docker run -d -p 8000:8000 \
+sudo docker run -d \
+  -p 8000:8000 \
   --env AWS_EC2_METADATA_DISABLED=false \
   --name run_app \
   $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:latest
